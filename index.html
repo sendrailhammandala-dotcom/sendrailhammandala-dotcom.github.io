@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Undangan Pernikahan</title>
+  <meta name="description" content="Undangan pernikahan — situs web statis ringan dengan JavaScript (countdown, RSVP, galeri, dan buku tamu)." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#ffffff;          /* latar putih */
+      --panel:#f5fdf7;       /* panel putih kehijauan */
+      --ink:#1b3d24;         /* teks utama hijau gelap */
+      --muted:#4caf50;       /* teks sekunder hijau */
+      --primary:#2e7d32;     /* hijau utama */
+      --primary-2:#1b5e20;   /* hijau aksen gelap */
+      --accent:#e8f5e9;      /* highlight hijau muda */
+      --ring: rgba(76,175,80,.45);
+      --radius: 18px;
+      --shadow: 0 10px 30px rgba(76,175,80,.15), 0 2px 10px rgba(0,0,0,.12);
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; 
+      background: radial-gradient(1000px 700px at 80% -10%, rgba(76,175,80,.08), rgba(0,0,0,0)) , var(--bg);
+      color:var(--ink); 
+      font-family: "Poppins", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      line-height:1.6; letter-spacing:.2px;
+    }
+    a{color:var(--primary)}
+    img{max-width:100%; display:block}
+    .wrap{max-width:1100px; margin-inline:auto; padding:28px}
+    .card{
+      background:linear-gradient(180deg, #f5fdf7, #ffffff); 
+      border:1px solid rgba(46,125,50,.25); 
+      border-radius:var(--radius); 
+      box-shadow:var(--shadow)
+    }
+    .glass{backdrop-filter: blur(8px)}
+    .btn{
+      appearance:none; 
+      border:1px solid rgba(46,125,50,.45); 
+      border-radius:999px; 
+      padding:12px 18px; 
+      color:#fff; 
+      background:linear-gradient(180deg, rgba(76,175,80,1), rgba(46,125,50,.9)); 
+      cursor:pointer; 
+      font-weight:600; 
+      letter-spacing:.3px; 
+      transition:.25s ease; 
+      box-shadow: 0 8px 20px rgba(76,175,80,.25);
+    }
+    .btn:hover{ transform: translateY(-2px); box-shadow: 0 12px 24px rgba(76,175,80,.35); }
+    .btn:focus{ outline: 3px solid var(--ring); outline-offset: 2px; }
+    .btn.secondary{ background:#fff; color:var(--primary); border-color: var(--primary) }
+    .chip{
+      display:inline-flex; align-items:center; gap:8px; 
+      padding:8px 12px; border-radius:999px; 
+      border:1px solid rgba(46,125,50,.25); 
+      background:rgba(76,175,80,.08); 
+      color:var(--primary); font-size:13px
+    }
+
+    /* HERO */
+    .hero{position:relative; overflow:hidden}
+    .hero .bg-blur{
+      position:absolute; inset:-40px; 
+      background:
+       radial-gradient(800px 600px at 10% 10%, rgba(76,175,80,.25), rgba(0,0,0,0)),
+       radial-gradient(900px 700px at 90% 30%, rgba(46,125,50,.12), rgba(0,0,0,0));
+       filter:saturate(120%); z-index:0
+    }
+    .hero-inner{position:relative; z-index:1; padding:70px 22px 40px}
+    .names{
+      font-family:"Marcellus", serif; 
+      font-size: clamp(42px, 7vw, 78px); 
+      line-height:1.05; letter-spacing:.6px; text-align:center; 
+      margin:10px 0 4px; 
+      background:linear-gradient(180deg,#2e7d32, #4caf50 60%, #81c784); 
+      -webkit-background-clip:text; color:transparent
+    }
+    .and{display:inline-block; margin:0 10px; color:var(--primary-2)}
+    .hero-sub{color:var(--muted); text-align:center; margin-top:6px}
+    .hero-cta{display:flex; justify-content:center; gap:12px; margin-top:24px; flex-wrap:wrap}
+
+    /* GRID */
+    .grid{display:grid; gap:22px}
+    @media(min-width: 900px){ .grid.cols-3{ grid-template-columns: 1.1fr 1fr 1fr } }
+    @media(min-width: 700px){ .grid.cols-2{ grid-template-columns: 1fr 1fr } }
+
+    /* SECTION TITLES */
+    .section-title{font-family:"Marcellus", serif; font-size: clamp(22px, 3.8vw, 36px); margin:0 0 14px; color:var(--primary-2)}
+    .section-sub{color:var(--muted); margin-top:-6px}
+
+    /* COUNTDOWN */
+    .countdown{display:flex; gap:10px; justify-content:center}
+    .count-box{
+      min-width:80px; text-align:center; padding:14px 12px; 
+      background:linear-gradient(180deg, #ffffff, #f5fdf7); 
+      border:1px solid rgba(46,125,50,.25); 
+      border-radius:16px
+    }
+    .count-box h3{font-size:28px; margin:0 0 4px; font-weight:700; color:var(--primary-2)}
+    .count-box p{margin:0; color:var(--muted); font-size:12px; letter-spacing:.5px}
+
+    /* TIMELINE */
+    .timeline{display:grid; gap:14px}
+    .step{display:flex; gap:12px; align-items:flex-start}
+    .dot{width:12px; height:12px; border-radius:999px; background:var(--primary-2); box-shadow:0 0 0 6px rgba(76,175,80,.15)}
+    .step .body{background:#f9fff9; border:1px solid rgba(46,125,50,.15); padding:12px 14px; border-radius:14px}
+    .step .time{color:var(--muted); font-size:13px}
+
+    /* GALLERY */
+    .gallery{display:grid; grid-template-columns: repeat(2, 1fr); gap:12px}
+    @media(min-width: 800px){ .gallery{ grid-template-columns: repeat(4, 1fr) } }
+    .gallery img{border-radius:14px; aspect-ratio: 4/5; object-fit:cover; border:1px solid rgba(46,125,50,.15)}
+
+    /* RSVP */
+    form{display:grid; gap:12px}
+    input, textarea, select{
+      background:#f9fff9; border:1px solid rgba(46,125,50,.25); border-radius:12px; padding:12px 14px; color:var(--ink); font:inherit
+    }
+    input::placeholder, textarea::placeholder{color:#81c784aa}
+    label{font-size:13px; color:var(--primary)}
+
+    /* BANK */
+    .bank{display:grid; gap:10px}
+    .bank .row{display:flex; justify-content:space-between; align-items:center; background:#f9fff9; border:1px solid rgba(46,125,50,.25); padding:12px 14px; border-radius:12px}
+
+    /* FOOTER */
+    footer{color:var(--primary-2); font-size:12px; text-align:center; padding:22px 0 60px}
+
+    /* FLOAT MUSIC */
+    .music{position:fixed; right:18px; bottom:18px; z-index:5}
+    .music button{width:54px; height:54px; border-radius:50%; display:grid; place-items:center; background:linear-gradient(180deg, #ffffff, #f5fdf7); border:1px solid rgba(46,125,50,.25); box-shadow:var(--shadow)}
+
+    .divider{height:1px; background:linear-gradient(90deg, rgba(255,255,255,0), rgba(46,125,50,.25), rgba(255,255,255,0)); margin:24px 0}
+</style>
+
+</head>
+<body>
+  <!-- ================= HERO ================= -->
+  <header class="hero card glass wrap" id="home">
+    <div class="bg-blur"></div>
+    <div class="hero-inner">
+      <div class="chip">Undangan Pernikahan</div>
+      <h1 class="names" id="names">A & B</h1>
+      <p class="hero-sub" id="dateText">Sabtu, 1 Januari 2028 • 10.00 WIB</p>
+      <div class="hero-cta">
+        <a href="#rsvp" class="btn">Konfirmasi Kehadiran</a>
+        <a href="#lokasi" class="btn secondary">Lihat Lokasi</a>
+      </div>
+      <div style="height:28px"></div>
+      <section class="countdown" aria-label="Hitung mundur ke hari pernikahan">
+        <div class="count-box"><h3 id="cd-days">0</h3><p>Hari</p></div>
+        <div class="count-box"><h3 id="cd-hours">0</h3><p>Jam</p></div>
+        <div class="count-box"><h3 id="cd-mins">0</h3><p>Menit</p></div>
+        <div class="count-box"><h3 id="cd-secs">0</h3><p>Detik</p></div>
+      </section>
+    </div>
+  </header>
+
+  <!-- ============== CONTENT ============== -->
+  <main class="wrap" id="content">
+
+    <section class="grid cols-3">
+      <article class="card glass" style="padding:22px">
+        <h2 class="section-title">Assalamu’alaikum</h2>
+        <p>Dengan memohon rahmat dan ridho Allah SWT, kami bermaksud menyelenggarakan akad dan resepsi pernikahan putra-putri kami. Merupakan kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir untuk memberikan doa restu.</p>
+        <div class="divider"></div>
+        <p id="coupleText" style="color:var(--muted)">Putra dari Bapak C & Ibu D • Putri dari Bapak E & Ibu F</p>
+      </article>
+
+      <article class="card glass" style="padding:22px">
+        <h2 class="section-title">Acara</h2>
+        <p class="section-sub">Jadwal singkat hari bahagia</p>
+        <div class="timeline">
+          <div class="step"><div class="dot"></div><div class="body"><strong>Akad Nikah</strong><div class="time" id="akadTime">Sabtu, 1 Januari 2028 • 08.00 WIB</div></div></div>
+          <div class="step"><div class="dot"></div><div class="body"><strong>Resepsi</strong><div class="time" id="resepsiTime">Sabtu, 1 Januari 2028 • 11.00–14.00 WIB</div></div></div>
+        </div>
+      </article>
+
+      <article class="card glass" id="lokasi" style="padding:22px">
+        <h2 class="section-title">Lokasi</h2>
+        <p id="venue">Gedung/Aula Contoh, Jl. Mawar No. 123, Garut</p>
+        <div style="display:flex; gap:10px; margin-top:12px">
+          <a id="mapLink" href="#" target="_blank" rel="noopener" class="btn">Buka Google Maps</a>
+          <button class="btn secondary" id="addCalendar">Tambahkan ke Kalender</button>
+        </div>
+      </article>
+    </section>
+
+    <section class="card glass" style="padding:22px; margin-top:22px">
+      <h2 class="section-title">Galeri</h2>
+      <p class="section-sub">Momen kecil menuju hari besar</p>
+      <div class="gallery" id="gallery">
+        <!-- Ganti src dengan foto Anda -->
+        <img src="https://images.unsplash.com/photo-1522673607200-164d1b6ce486?q=80&w=800&auto=format&fit=crop" alt="Prewedding 1"/>
+        <img src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=800&auto=format&fit=crop" alt="Prewedding 2"/>
+        <img src="https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800&auto=format&fit=crop" alt="Prewedding 3"/>
+        <img src="https://images.unsplash.com/photo-1537633552985-df8429e8048b?q=80&w=800&auto=format&fit=crop" alt="Prewedding 4"/>
+      </div>
+    </section>
+
+    <section class="grid cols-2" style="margin-top:22px">
+      <article class="card glass" id="rsvp" style="padding:22px">
+        <h2 class="section-title">RSVP</h2>
+        <p class="section-sub">Konfirmasi kehadiran Anda</p>
+        <form id="rsvpForm">
+          <div>
+            <label for="nama">Nama</label>
+            <input id="nama" name="nama" placeholder="Nama lengkap" required />
+          </div>
+          <div>
+            <label for="jumlah">Jumlah Tamu</label>
+            <select id="jumlah" name="jumlah">
+              <option>1</option><option>2</option><option>3</option><option>4</option>
+            </select>
+          </div>
+          <div>
+            <label for="status">Status</label>
+            <select id="status" name="status">
+              <option value="Hadir">Hadir</option>
+              <option value="Tidak Hadir">Tidak Hadir</option>
+              <option value="Ragu">Masih Ragu</option>
+            </select>
+          </div>
+          <div>
+            <label for="pesan">Ucapan</label>
+            <textarea id="pesan" name="pesan" rows="3" placeholder="Doa/ucapan singkat"></textarea>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap">
+            <button type="submit" class="btn">Kirim via WhatsApp</button>
+            <button type="button" id="copyRSVP" class="btn secondary">Salin Teks RSVP</button>
+          </div>
+        </form>
+      </article>
+
+      <article class="card glass" style="padding:22px">
+        <h2 class="section-title">Hadiah Digital</h2>
+        <p class="section-sub">Tanpa mengurangi rasa hormat, bagi yang berkenan berbagi kebahagiaan</p>
+        <div class="bank">
+          <div class="row"><div><strong>Bank BCA</strong><div style="color:var(--muted); font-size:13px">a.n. A Contoh</div></div><button class="btn" data-copy="1234567890">Salin 1234567890</button></div>
+          <div class="row"><div><strong>Bank BRI</strong><div style="color:var(--muted); font-size:13px">a.n. B Contoh</div></div><button class="btn" data-copy="9876543210">Salin 9876543210</button></div>
+          <div class="row"><div><strong>Alamat</strong><div style="color:var(--muted); font-size:13px">Jl. Mawar No. 123, Garut</div></div><button class="btn" id="copyAddress">Salin Alamat</button></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="card glass" style="padding:22px; margin-top:22px">
+      <h2 class="section-title">Buku Tamu</h2>
+      <p class="section-sub">Tinggalkan ucapan — tersimpan di perangkat Anda (localStorage)</p>
+      <form id="guestbookForm" style="margin-bottom:12px">
+        <div class="grid cols-2">
+          <input id="gb-name" placeholder="Nama" required />
+          <input id="gb-message" placeholder="Ucapan singkat" required />
+        </div>
+        <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap">
+          <button class="btn" type="submit">Tambahkan</button>
+          <button class="btn secondary" type="button" id="gb-clear">Bersihkan</button>
+        </div>
+      </form>
+      <div id="guestbookList" class="timeline"></div>
+    </section>
+
+  </main>
+
+  <footer class="wrap">
+    <div class="divider"></div>
+    <footer>
+      © <span id="year"></span> — Dengan cinta, <span id="footerNames">A & B</span>. Terima kasih atas doa dan kehadirannya.
+    </footer>
+  </footer>
+
+  <!-- Musik latar (opsional: ganti src ke file Anda) -->
+  <div class="music">
+    <button id="musicBtn" class="btn" aria-label="Putar/Jeda Musik">♫</button>
+    <audio id="bgm" loop>
+      <!-- Ganti dengan file Anda, contoh: assets/lagu.mp3 -->
+      <source src="" type="audio/mpeg">
+    </audio>
+  </div>
+
+  <!-- ============== SCRIPT ============== -->
+  <script>
+  /**
+   * KONFIGURASI — ganti sesuai kebutuhan Anda
+   * Semua teks & tautan penting cukup diubah di sini.
+   */
+  const CONFIG = {
+    pengantinPria: "Asep",
+    pengantinWanita: "Bunga",
+    // Format: YYYY-MM-DDTHH:MM:SS+TZ (WIB: +07:00)
+    tanggalAkad: "2028-01-01T08:00:00+07:00",
+    tanggalResepsiMulai: "2028-01-01T11:00:00+07:00",
+    tanggalResepsiSelesai: "2028-01-01T14:00:00+07:00",
+    venueText: "Gedung/Aula Contoh, Jl. Mawar No. 123, Garut",
+    mapsUrl: "https://maps.google.com/?q=Gedung%20Aula%20Contoh%20Garut",
+    whatsappNumber: "6281234567890", // tanpa +
+    foto: [/* opsional: isi link gambar untuk galeri */],
+    bankList: [
+      { bank: "BCA", nama: "A Contoh", norek: "1234567890" },
+      { bank: "BRI", nama: "B Contoh", norek: "9876543210" },
+    ],
+    alamatRumah: "Jl. Mawar No. 123, Garut",
+  };
+
+  // ===== UTILITAS WAKTU =====
+  const fmtID = new Intl.DateTimeFormat('id-ID', { dateStyle:'full', timeStyle:'short', timeZone:'Asia/Jakarta' });
+  const fmtDate = new Intl.DateTimeFormat('id-ID', { dateStyle:'full', timeZone:'Asia/Jakarta' });
+  const fmtTime = new Intl.DateTimeFormat('id-ID', { timeStyle:'short', timeZone:'Asia/Jakarta' });
+
+  function toDate(s){ return new Date(s) }
+
+  // ===== INISIALISASI TEKS =====
+  const names = `${CONFIG.pengantinPria} <span class="and">&</span> ${CONFIG.pengantinWanita}`;
+  document.getElementById('names').innerHTML = names;
+  document.getElementById('footerNames').innerHTML = `${CONFIG.pengantinPria} & ${CONFIG.pengantinWanita}`;
+  document.getElementById('venue').textContent = CONFIG.venueText;
+  document.getElementById('mapLink').href = CONFIG.mapsUrl;
+  document.getElementById('coupleText').textContent = `${CONFIG.pengantinPria} & ${CONFIG.pengantinWanita}`;
+
+  const akad = toDate(CONFIG.tanggalAkad);
+  const resepsiMulai = toDate(CONFIG.tanggalResepsiMulai);
+  const resepsiSelesai = toDate(CONFIG.tanggalResepsiSelesai);
+
+  document.getElementById('dateText').textContent = `${fmtDate.format(akad)} • ${fmtTime.format(akad)} WIB`;
+  document.getElementById('akadTime').textContent = `${fmtDate.format(akad)} • ${fmtTime.format(akad)} WIB`;
+  document.getElementById('resepsiTime').textContent = `${fmtDate.format(resepsiMulai)} • ${fmtTime.format(resepsiMulai)}–${fmtTime.format(resepsiSelesai)} WIB`;
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // ===== COUNTDOWN =====
+  function updateCountdown(){
+    const target = akad; // menuju waktu akad
+    const now = new Date();
+    const diff = target - now;
+    const clamp = (n) => Math.max(0, n);
+    const d = clamp(Math.floor(diff / (1000*60*60*24)));
+    const h = clamp(Math.floor((diff / (1000*60*60)) % 24));
+    const m = clamp(Math.floor((diff / (1000*60)) % 60));
+    const s = clamp(Math.floor((diff / 1000) % 60));
+    document.getElementById('cd-days').textContent = d;
+    document.getElementById('cd-hours').textContent = h;
+    document.getElementById('cd-mins').textContent = m;
+    document.getElementById('cd-secs').textContent = s;
+  }
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+
+  // ===== TAMBAHKAN KE KALENDER (ICS) =====
+  document.getElementById('addCalendar').addEventListener('click', () => {
+    const dt = (d)=> d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Undangan Statis//ID\nBEGIN:VEVENT\nUID:${crypto.randomUUID()}\nDTSTAMP:${dt(new Date())}\nDTSTART:${dt(akad)}\nDTEND:${dt(resepsiSelesai)}\nSUMMARY:Pernikahan ${CONFIG.pengantinPria} & ${CONFIG.pengantinWanita}\nLOCATION:${CONFIG.venueText}\nDESCRIPTION:Akad & Resepsi — ${CONFIG.mapsUrl}\nEND:VEVENT\nEND:VCALENDAR`;
+    const blob = new Blob([ics], { type:'text/calendar' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `Pernikahan-${CONFIG.pengantinPria}-${CONFIG.pengantinWanita}.ics`;
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  });
+
+  // ===== RSVP via WhatsApp =====
+  document.getElementById('rsvpForm').addEventListener('submit', (e)=>{
+    e.preventDefault();
+    const nama = document.getElementById('nama').value.trim();
+    const jumlah = document.getElementById('jumlah').value;
+    const status = document.getElementById('status').value;
+    const pesan = document.getElementById('pesan').value.trim();
+    const text = `Halo, saya *${nama}* (jumlah tamu: ${jumlah}).\nStatus: ${status}.\nUcapan: ${pesan || '-'}\nTerima kasih.`;
+    const url = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+  });
+
+  document.getElementById('copyRSVP').addEventListener('click', ()=>{
+    const nama = document.getElementById('nama').value.trim() || 'Nama Anda';
+    const jumlah = document.getElementById('jumlah').value;
+    const status = document.getElementById('status').value;
+    const pesan = document.getElementById('pesan').value.trim() || '-';
+    const text = `RSVP — ${CONFIG.pengantinPria} & ${CONFIG.pengantinWanita}\nNama: ${nama}\nJumlah tamu: ${jumlah}\nStatus: ${status}\nUcapan: ${pesan}`;
+    navigator.clipboard.writeText(text).then(()=> alert('Teks RSVP disalin.'));
+  });
+
+  // ===== Salin rekening & alamat =====
+  document.querySelectorAll('[data-copy]').forEach(btn=>{
+    btn.addEventListener('click', ()=> navigator.clipboard.writeText(btn.dataset.copy).then(()=> alert('Disalin: '+btn.dataset.copy)) )
+  });
+  document.getElementById('copyAddress').addEventListener('click', ()=> navigator.clipboard.writeText(CONFIG.alamatRumah).then(()=> alert('Alamat disalin.')) );
+
+  // ===== Buku Tamu (localStorage) =====
+  const GB_KEY = 'guestbook-items-v1';
+  const gbListEl = document.getElementById('guestbookList');
+  const gbForm = document.getElementById('guestbookForm');
+
+  function loadGB(){
+    try{ return JSON.parse(localStorage.getItem(GB_KEY) || '[]') }catch{ return [] }
+  }
+  function saveGB(items){ localStorage.setItem(GB_KEY, JSON.stringify(items)); }
+  function renderGB(){
+    gbListEl.innerHTML = '';
+    const items = loadGB();
+    items.forEach(({name,message,time})=>{
+      const row = document.createElement('div'); row.className='step';
+      row.innerHTML = `<div class="dot"></div><div class="body"><strong>${name}</strong><div class="time">${new Date(time).toLocaleString('id-ID')}</div><div>${message}</div></div>`;
+      gbListEl.appendChild(row);
+    });
+  }
+  renderGB();
+
+  gbForm.addEventListener('submit', (e)=>{
+    e.preventDefault();
+    const name = document.getElementById('gb-name').value.trim();
+    const message = document.getElementById('gb-message').value.trim();
+    if(!name || !message) return;
+    const items = loadGB();
+    items.unshift({ name, message, time: Date.now() });
+    saveGB(items); renderGB();
+    gbForm.reset();
+  });
+  document.getElementById('gb-clear').addEventListener('click', ()=>{
+    if(confirm('Hapus semua entri buku tamu di perangkat ini?')){ localStorage.removeItem(GB_KEY); renderGB(); }
+  });
+
+  // ===== Galeri dinamis (opsional) =====
+  if(CONFIG.foto && CONFIG.foto.length){
+    const wrap = document.getElementById('gallery');
+    wrap.innerHTML = '';
+    CONFIG.foto.forEach((src,i)=>{
+      const im = document.createElement('img'); im.src = src; im.alt = 'Foto '+(i+1); wrap.appendChild(im);
+    });
+  }
+
+  // ===== Musik =====
+  const bgm = document.getElementById('bgm');
+  const musicBtn = document.getElementById('musicBtn');
+  let isPlaying = false;
+  musicBtn.addEventListener('click', async ()=>{
+    try{
+      if(!isPlaying){ await bgm.play(); isPlaying=true; musicBtn.textContent='❚❚'; }
+      else{ bgm.pause(); isPlaying=false; musicBtn.textContent='♫'; }
+    }catch(err){ alert('Tidak dapat memutar audio. Pastikan file musik telah diisi.'); }
+  });
+
+  // ===== Smooth scroll untuk anchor =====
+  document.querySelectorAll('a[href^="#"]').forEach(a=>{
+    a.addEventListener('click', (e)=>{
+      const id = a.getAttribute('href').slice(1);
+      const el = document.getElementById(id);
+      if(el){ e.preventDefault(); el.scrollIntoView({behavior:'smooth', block:'start'}); }
+    });
+  });
+
+  // ===== Schema.org (SEO Event) =====
+  const ld = {
+    '@context': 'https://schema.org', '@type':'WeddingEvent',
+    name: `Pernikahan ${CONFIG.pengantinPria} & ${CONFIG.pengantinWanita}`,
+    startDate: akad.toISOString(), endDate: resepsiSelesai.toISOString(),
+    eventSchedule: [
+      { '@type':'Schedule', startDate: akad.toISOString(), name:'Akad Nikah' },
+      { '@type':'Schedule', startDate: resepsiMulai.toISOString(), endDate: resepsiSelesai.toISOString(), name:'Resepsi' }
+    ],
+    location: { '@type':'Place', name: CONFIG.venueText, address: CONFIG.venueText },
+    url: location.href
+  };
+  const script = document.createElement('script'); script.type='application/ld+json'; script.textContent = JSON.stringify(ld); document.head.appendChild(script);
+  </script>
+
+  <!-- Tips: Simpan file ini sebagai index.html lalu unggah ke hosting static (GitHub Pages, Netlify, Vercel, atau cPanel). -->
+</body>
+</html>
